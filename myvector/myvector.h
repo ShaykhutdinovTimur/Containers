@@ -1,6 +1,5 @@
 #ifndef MYVECTOR_H
 #define MYVECTOR_H
-#include <iterator>
 
 namespace my {
 
@@ -113,7 +112,7 @@ namespace my {
                 }
             } catch (std::exception& e) {
                 free(elements);
-                throw e;
+                throw;
             }            
         }
 
@@ -128,7 +127,7 @@ namespace my {
                 }
             } catch (std::exception& e) {
                 free(elements);
-                throw e;
+                throw;
             }
             return *this;
         }
@@ -149,7 +148,7 @@ namespace my {
 
         void reserve(size_t n) {
             try {
-                ensure_capacity(reserved);
+                ensure_capacity(n);
                 //exceptions only before
                 reserved = n;
                 count = 0;
@@ -213,12 +212,12 @@ namespace my {
                             new_elements[i].~T();
                         }
                         free(new_elements);
-                        throw e;
+                        throw;
                     }
                     new (elements)T(rhs);
                     count ++;
                 } catch (std::exception& e) {
-                    throw e;
+                    throw;
                 }
             }
         }
@@ -317,7 +316,7 @@ namespace my {
                 free(elements);
                 elements = temp;
             } catch (std::exception& e) {
-                throw e;
+                throw;
             }
         }
     };

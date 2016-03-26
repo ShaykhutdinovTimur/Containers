@@ -18,4 +18,5 @@ TEMPLATE = app
 SOURCES += main.cpp
 
 HEADERS += \
-    myvector.h
+    myvector.h \
+    mysort.h
