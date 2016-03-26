@@ -142,7 +142,7 @@ namespace my {
                 }
             } catch (std::exception& e) {
                 free(elements);
-                throw e;
+                throw;
             }
         }
 
@@ -154,7 +154,7 @@ namespace my {
                 count = 0;
             } catch (std::exception& e) {
                 free(elements);
-                throw e;
+                throw;
             }
         }
 
@@ -176,7 +176,7 @@ namespace my {
                     new (elements + count)T(rhs);
                     count++;
                 } catch (std::exception& e) {
-                    throw e;
+                    throw;
                 }
             }
         }
@@ -189,36 +189,32 @@ namespace my {
                 new (elements)T(rhs);
                 count++;
             } else {
+                T* new_elements;
+                size_t i = -1;
                 try {
-                    T* new_elements;
-                    size_t i = -1;
-                    try {
-                        int new_capacity = (reserved + 1) * 2;
-                        new_elements = (T*)malloc(new_capacity * sizeof(T));
-                        //exceptions only before
-                        if (elements != NULL) {
-                            for(i = 0; i < count; i++) {
-                                new (new_elements + i + 1) T (elements[i]);
-                            }
-                            for(i = 0; i < count; i++) {
-                                elements[i].~T();
-                            }
-                            free(elements);
+                    int new_capacity = (reserved + 1) * 2;
+                    new_elements = (T*)malloc(new_capacity * sizeof(T));
+                    //exceptions only before
+                    if (elements != NULL) {
+                        for(i = 0; i < count; i++) {
+                            new (new_elements + i + 1) T (elements[i]);
                         }
-                        elements = new_elements;
-                        reserved = new_capacity;
-                    } catch (std::exception& e) {
-                        for (; i >= 0; i--) {
-                            new_elements[i].~T();
+                        for(i = 0; i < count; i++) {
+                            elements[i].~T();
                         }
-                        free(new_elements);
-                        throw;
+                        free(elements);
                     }
-                    new (elements)T(rhs);
-                    count ++;
+                    elements = new_elements;
+                    reserved = new_capacity;
                 } catch (std::exception& e) {
+                    for (; i >= 0; i--) {
+                        new_elements[i].~T();
+                    }
+                    free(new_elements);
                     throw;
                 }
+                new (elements)T(rhs);
+                count ++;
             }
         }
 
