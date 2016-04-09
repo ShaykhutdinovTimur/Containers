@@ -120,14 +120,14 @@ namespace my
             //find
             if(key < this->key) {
                 if (left) {
-                    return left->erase(value);
+                    return left->erase(key);
                 } else {
                     return left;
                 }
             }
             if(key > this->key) {
                 if (right) {
-                    return right->erase(value);
+                    return right->erase(key);
                 } else {
                     return right;
                 }
@@ -439,7 +439,6 @@ namespace my
             node_t* delete_node = it.node;
             fake_root.erase(key);
             delete delete_node;
-            std::cout << "exit debug_map erase" << std::endl;
             return find(next_value);
         }
 

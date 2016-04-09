@@ -41,7 +41,8 @@ int main() {
     std::map<int, int> map;
     for(int i = 0; i < 5000; i++) {
         if(!debug_map.check_tree()) {
-            return 1337;
+            std::cout << "FAIL" << std::endl;
+            return 1;
         }
         int random1 = rand() % 100;
         int random2 = rand() % 100;
@@ -50,7 +51,7 @@ int main() {
         if(contains1) {
             int res = (debug_map.find(random1)).node->value;
             if (map[random1] != res) {
-                std::cout << "FAIL";
+                std::cout << "FAIL" << std::endl;
                 return 1;
             }
             debug_map.erase(random1);
@@ -59,7 +60,7 @@ int main() {
         debug_map.insert(random1, random2);
         map[random1] = random2;
     }
-    std::cout << "OK";
+    std::cout << "OK" << std::endl;
     return 0;
 }
 
