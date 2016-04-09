@@ -8,25 +8,48 @@
 #include <functional>
 #include <assert.h>
 #include <vector>
+#include <set>
 
 namespace my
 {
+    template<typename KEY_T, typename VALUE_T>
+    struct debug_map_iterator;
 
     template<typename KEY_T, typename VALUE_T>
     struct debug_map_node {
         typedef debug_map_node<KEY_T, VALUE_T> self_t;
+        typedef debug_map_iterator<KEY_T, VALUE_T> iterator;
         KEY_T key;
         VALUE_T value;
         self_t* left;
         self_t* right;
         self_t* parent;
+        std::set<iterator*> iterators;
 
+        void init_pointers() {
+            left = nullptr;
+            right = nullptr;
+            parent = nullptr;
+        }
 
-        debug_map_node() {}
+        debug_map_node() {
+            init_pointers();
+        }
 
-        debug_map_node(KEY_T key, VALUE_T value) : key(key), value(value) {}
+        ~debug_map_node() {
+            for (auto i = iterators.begin(); i != iterators.end(); i++) {
+                (*i)->invalidate();
+            }
+        }
 
-        debug_map_node(self_t * parent) : parent(parent) {}
+        debug_map_node(KEY_T key, VALUE_T value) : key(key), value(value) {
+            init_pointers();
+        }
+
+        debug_map_node(self_t * parent) : parent(parent) {
+            left = nullptr;
+            right = nullptr;
+        }
 
         debug_map_node(const self_t& other) {
             copy(other);
@@ -94,7 +117,7 @@ namespace my
 
         self_t* erase(const KEY_T& key) {
             assert(is_valid() && "No valid node");
-            //not found
+            //find
             if(key < this->key) {
                 if (left) {
                     return left->erase(value);
@@ -235,7 +258,16 @@ namespace my
             copy(other);
         }
 
-        debug_map_iterator(node_type * node, node_type * root, bool end) : node(node), root(root), end(end) {}
+        debug_map_iterator(node_type * node, node_type * root, bool end) : node(node), root(root), end(end) {
+            assert(node != nullptr);
+            node->iterators.insert(this);
+        }
+
+        ~debug_map_iterator() {
+            if (node) {
+                node->iterators.erase(this);
+            }
+        }
 
         self_t& operator=(const self_t& other) {
             copy(other);
@@ -248,7 +280,14 @@ namespace my
             end = other.end;
         }
 
+        void invalidate() {
+            root = nullptr;
+            node = nullptr;
+            end = false;
+        }
+
         self_t& operator++() {
+            assert(node != nullptr);
             assert(node != root);
             node_type* current = root->left;
             node_type* result = nullptr;
@@ -278,6 +317,7 @@ namespace my
         }
 
         self_t& operator--() {
+            assert(node != nullptr);
             node_type* current = root;
             node_type* result = nullptr;
             while(current) {
@@ -300,14 +340,17 @@ namespace my
         }
 
         KEY_T const& operator*() const {
+            assert(node != nullptr);
             return node->key;
         }
 
         KEY_T const* operator->() const {
+            assert(node != nullptr);
             return &node->key;
         }
 
         bool operator==(const self_t& other) {
+            assert(root == other.root);
             return (end == other.end);
         }
 
@@ -385,7 +428,6 @@ namespace my
                 return end();
             }
         }
-
 
         iterator erase(KEY_T key) {
             iterator it = find(key);
