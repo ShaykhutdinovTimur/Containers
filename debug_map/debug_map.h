@@ -1,5 +1,5 @@
-#ifndef debug_map_H
-#define debug_map_H
+#ifndef DEBUG_MAP_H
+#define DEBUG_MAP_H
 
 
 #include <memory>
@@ -17,8 +17,10 @@ namespace my
 
     template<typename KEY_T, typename VALUE_T>
     struct debug_map_node {
+
         typedef debug_map_node<KEY_T, VALUE_T> self_t;
         typedef debug_map_iterator<KEY_T, VALUE_T> iterator;
+
         KEY_T key;
         VALUE_T value;
         self_t* left;
@@ -39,6 +41,12 @@ namespace my
         ~debug_map_node() {
             for (auto i = iterators.begin(); i != iterators.end(); i++) {
                 (*i)->invalidate();
+            }
+            if (left) {
+                delete left;
+            }
+            if (right) {
+                delete right;
             }
         }
 
@@ -117,7 +125,6 @@ namespace my
 
         self_t* erase(const KEY_T& key) {
             assert(is_valid() && "No valid node");
-            //find
             if(key < this->key) {
                 if (left) {
                     return left->erase(key);
@@ -132,7 +139,6 @@ namespace my
                     return right;
                 }
             }
-            //erasing node
             if(left && right) {
                 self_t* min_ptr = right->min();
                 if(min_ptr == right) {
@@ -159,10 +165,8 @@ namespace my
                         right->parent = min_ptr;
                     }
                 }
-
                 return this;
             }
-
             if(left) {
                 get_parent_ptr() = left;
                 left->parent = parent;
@@ -385,11 +389,11 @@ namespace my
         }
 
         void copy(const self_t& other) {
-            fake_root = other.fake_root;
             size = other.size();
+            fake_root = other.fake_root;
         }
 
-        ~debug_map() {
+        void free() {
             std::vector<KEY_T> keys;
             for(auto it = begin(); it != end(); it++) {
                 keys.push_back(*it);
@@ -397,6 +401,10 @@ namespace my
             for(int i = 0; i < keys.size(); i++) {
                 erase(keys[i]);
             }
+        }
+
+        ~debug_map() {
+            free();
         }
 
         iterator insert(KEY_T key, VALUE_T value) {
@@ -438,6 +446,8 @@ namespace my
 
             node_t* delete_node = it.node;
             fake_root.erase(key);
+            delete_node->left = nullptr;
+            delete_node->right = nullptr;
             delete delete_node;
             return find(next_value);
         }
