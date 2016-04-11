@@ -393,18 +393,7 @@ namespace my
             fake_root = other.fake_root;
         }
 
-        void free() {
-            std::vector<KEY_T> keys;
-            for(auto it = begin(); it != end(); it++) {
-                keys.push_back(*it);
-            }
-            for(int i = 0; i < keys.size(); i++) {
-                erase(keys[i]);
-            }
-        }
-
         ~debug_map() {
-            free();
         }
 
         iterator insert(KEY_T key, VALUE_T value) {
